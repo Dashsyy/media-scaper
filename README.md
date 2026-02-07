@@ -36,6 +36,13 @@ npm run dev
 
 Ensure a PostgreSQL instance is running and `DATABASE_URL` points to it.
 
+Sample backend `.env`:
+```env
+PORT=4000
+DATABASE_URL=postgres://media_scraper:media_scraper@localhost:5432/media_scraper
+DEFAULT_OUTPUT_DIR=../downloads
+```
+
 Frontend:
 ```bash
 cd frontend
