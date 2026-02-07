@@ -9,6 +9,7 @@ router.post("/", async (req, res) => {
     urls?: unknown;
     items?: unknown;
     outputDir?: unknown;
+    force?: unknown;
   };
   const urls = Array.isArray(body.urls) ? body.urls.filter((url) => typeof url === "string") : [];
   const items = Array.isArray(body.items)
@@ -38,7 +39,10 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const downloadedSet = await getDownloadedSet(combined.map((entry) => entry.url));
+    const force = body.force === true;
+    const downloadedSet = force
+      ? new Set<string>()
+      : await getDownloadedSet(combined.map((entry) => entry.url));
     const pendingItems = combined.filter((entry) => !downloadedSet.has(entry.url));
 
     if (pendingItems.length === 0) {

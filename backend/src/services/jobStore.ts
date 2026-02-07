@@ -23,7 +23,7 @@ export type Job = {
   status: "running" | "completed" | "failed" | "cancelled";
   items: JobItem[];
   emitter: EventEmitter;
-  currentProcess?: ReturnType<typeof spawn> | null;
+  currentProcesses?: Set<ReturnType<typeof spawn>>;
   cancelled?: boolean;
   active?: boolean;
 };
@@ -48,61 +48,95 @@ const finishJob = (job: Job) => {
 
 const runDownloads = async (job: Job, outputDir: string, onlyFailed = false) => {
   job.active = true;
-  for (const item of job.items) {
-    if (job.cancelled) {
-      item.status = item.status === "completed" ? "completed" : "cancelled";
+  const concurrency = Math.max(1, Number(process.env.DOWNLOAD_CONCURRENCY ?? 1));
+  const queue = job.items
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => {
+      if (onlyFailed) {
+        return item.status === "failed";
+      }
+      return item.status !== "completed";
+    });
+  let cursor = 0;
+
+  const takeNext = () => {
+    if (cursor >= queue.length) {
+      return null;
+    }
+    const entry = queue[cursor];
+    cursor += 1;
+    return entry.item;
+  };
+
+  const worker = async () => {
+    while (true) {
+      if (job.cancelled) {
+        return;
+      }
+
+      const item = takeNext();
+      if (!item) {
+        return;
+      }
+
+      if (job.cancelled) {
+        item.status = item.status === "completed" ? "completed" : "cancelled";
+        emitItemUpdate(job, item);
+        continue;
+      }
+
+      item.status = "downloading";
+      item.error = null;
       emitItemUpdate(job, item);
-      continue;
-    }
 
-    if (onlyFailed && item.status !== "failed") {
-      continue;
-    }
-
-    if (item.status === "completed") {
-      continue;
-    }
-
-    item.status = "downloading";
-    item.error = null;
-    emitItemUpdate(job, item);
-
-    try {
-      const result = await runYtDlpDownload({
-        url: item.url,
-        outputDir,
-        onProgress: (progress) => {
-          item.progress = Math.max(item.progress, Math.floor(progress));
-          emitItemUpdate(job, item);
-        },
-        onLog: (line) => {
-          if (line.includes("ERROR")) {
-            item.error = line;
+      try {
+        const result = await runYtDlpDownload({
+          url: item.url,
+          outputDir,
+          onProgress: (progress) => {
+            item.progress = Math.max(item.progress, Math.floor(progress));
+            emitItemUpdate(job, item);
+          },
+          onLog: (line) => {
+            if (line.includes("ERROR")) {
+              item.error = line;
+            }
+          },
+          onFilePath: (filePath) => {
+            item.filePath = filePath;
+          },
+          onProcess: (process) => {
+            job.currentProcesses?.add(process);
+            process.on("close", () => {
+              job.currentProcesses?.delete(process);
+            });
           }
-        },
-        onFilePath: (filePath) => {
-          item.filePath = filePath;
-        },
-        onProcess: (process) => {
-          job.currentProcess = process;
-        }
-      });
+        });
 
-      item.progress = 100;
-      item.status = "completed";
-      item.filePath = item.filePath ?? result.filePath ?? null;
-      await markDownloaded(item.url, item.title, item.filePath, item.thumbnail ?? null);
-      emitItemUpdate(job, item);
-    } catch (error) {
-      item.status = job.cancelled ? "cancelled" : "failed";
-      item.error = error instanceof Error ? error.message : "Download failed";
-      emitItemUpdate(job, item);
+        item.progress = 100;
+        item.status = "completed";
+        item.filePath = item.filePath ?? result.filePath ?? null;
+        await markDownloaded(item.url, item.title, item.filePath, item.thumbnail ?? null);
+        emitItemUpdate(job, item);
+      } catch (error) {
+        item.status = job.cancelled ? "cancelled" : "failed";
+        item.error = error instanceof Error ? error.message : "Download failed";
+        emitItemUpdate(job, item);
+      }
     }
+  };
 
-    job.currentProcess = null;
-  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, queue.length) }, worker));
 
   job.active = false;
+  if (job.cancelled) {
+    job.items.forEach((item) => {
+      if (item.status !== "completed" && item.status !== "cancelled") {
+        item.status = "cancelled";
+        emitItemUpdate(job, item);
+      }
+    });
+  }
   finishJob(job);
 };
 
@@ -126,6 +160,7 @@ export const createJob = (
     status: "running",
     items,
     emitter: new EventEmitter(),
+    currentProcesses: new Set(),
     cancelled: false,
     active: false
   };
@@ -151,9 +186,9 @@ export const cancelJob = (jobId: string) => {
   }
 
   job.cancelled = true;
-  if (job.currentProcess) {
-    job.currentProcess.kill("SIGTERM");
-  }
+  job.currentProcesses?.forEach((process) => {
+    process.kill("SIGTERM");
+  });
   return job;
 };
 

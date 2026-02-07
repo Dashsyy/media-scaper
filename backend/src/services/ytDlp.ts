@@ -80,9 +80,17 @@ export const runYtDlpDownload = ({
   onProcess
 }: DownloadOptions) =>
   new Promise<{ filePath: string | null }>((resolve, reject) => {
-    const args = ["--newline", "-o", `${outputDir}/%(title)s.%(ext)s`, url];
+    const args = [
+      "--newline",
+      "--trim-filenames",
+      "60",
+      "-o",
+      `${outputDir}/%(id)s.%(ext)s`,
+      url
+    ];
     const process = spawn("yt-dlp", args);
     let filePath: string | null = null;
+    let errorOutput = "";
 
     onProcess?.(process);
 
@@ -115,6 +123,7 @@ export const runYtDlpDownload = ({
         .toString()
         .split(/\r?\n/)
         .filter((line: string) => line.length > 0);
+      errorOutput += `${lines.join("\n")}\n`;
       lines.forEach((line: string) => onLog?.(line));
     });
 
@@ -128,6 +137,7 @@ export const runYtDlpDownload = ({
         return;
       }
 
-      reject(new Error(`yt-dlp exited with code ${code}`));
+      const message = errorOutput.trim();
+      reject(new Error(message || `yt-dlp exited with code ${code}`));
     });
   });

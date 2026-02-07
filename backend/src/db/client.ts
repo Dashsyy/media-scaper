@@ -2,8 +2,7 @@ import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 
 const databaseUrl =
-  process.env.DATABASE_URL ??
-  "postgres://media_scraper:media_scraper@localhost:5432/media_scraper";
+  process.env.DATABASE_URL
 
 export const pool = new Pool({ connectionString: databaseUrl });
 
