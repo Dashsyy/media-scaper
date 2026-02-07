@@ -1,31 +1,25 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 
-const databaseUrl = process.env.DATABASE_URL ?? "./dev.db";
+const databaseUrl =
+  process.env.DATABASE_URL ??
+  "postgres://media_scraper:media_scraper@localhost:5432/media_scraper";
 
-export const sqlite = new Database(databaseUrl);
+export const pool = new Pool({ connectionString: databaseUrl });
 
-sqlite.exec(`
-  CREATE TABLE IF NOT EXISTS downloaded_videos (
-    url TEXT PRIMARY KEY,
-    title TEXT,
-    thumbnail TEXT,
-    file_path TEXT,
-    downloaded_at TEXT NOT NULL
-  );
-`);
+export const db = drizzle(pool);
 
-const ensureColumn = (column: string, definition: string) => {
-  const columns = sqlite.prepare("PRAGMA table_info(downloaded_videos)").all() as Array<{
-    name: string;
-  }>;
-  const exists = columns.some((item) => item.name === column);
-  if (!exists) {
-    sqlite.exec(`ALTER TABLE downloaded_videos ADD COLUMN ${column} ${definition}`);
-  }
+export const initDb = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS downloaded_videos (
+      url TEXT PRIMARY KEY,
+      title TEXT,
+      thumbnail TEXT,
+      file_path TEXT,
+      downloaded_at TEXT NOT NULL
+    );
+  `);
+
+  await pool.query(`ALTER TABLE downloaded_videos ADD COLUMN IF NOT EXISTS thumbnail TEXT;`);
+  await pool.query(`ALTER TABLE downloaded_videos ADD COLUMN IF NOT EXISTS file_path TEXT;`);
 };
-
-ensureColumn("thumbnail", "TEXT");
-ensureColumn("file_path", "TEXT");
-
-export const db = drizzle(sqlite);

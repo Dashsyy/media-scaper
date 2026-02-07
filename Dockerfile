@@ -1,11 +1,11 @@
 # =========================
-# deps
+# deps (dev + build deps)
 # =========================
-FROM node:20-bookworm AS deps
+FROM node:25-bookworm-slim AS deps
 
 WORKDIR /app
 
-# Build tools needed only if native deps fallback to build
+# Build tools ONLY for build stage
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
      python3 \
@@ -13,13 +13,13 @@ RUN apt-get update \
      g++ \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy manifests first for better layer caching
+# Copy manifests
 COPY backend/package.json ./backend/package.json
 COPY backend/package-lock.json ./backend/package-lock.json
 COPY frontend/package.json ./frontend/package.json
 COPY frontend/package-lock.json ./frontend/package-lock.json
 
-# Install deps (do NOT force build-from-source)
+# Install all deps (dev included)
 RUN cd backend && npm ci
 RUN cd frontend && npm ci
 
@@ -27,7 +27,7 @@ RUN cd frontend && npm ci
 # =========================
 # builder
 # =========================
-FROM node:20-bookworm AS builder
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -40,9 +40,9 @@ RUN cd backend && npm run build
 
 
 # =========================
-# runner
+# runner (no native deps)
 # =========================
-FROM node:20-bookworm AS runner
+FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
 
@@ -50,17 +50,20 @@ ENV NODE_ENV=production
 ENV PORT=4000
 ENV STATIC_DIR=/app/public
 
+# Runtime-only packages
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
      ffmpeg \
      yt-dlp \
   && rm -rf /var/lib/apt/lists/*
 
+# Copy built output only
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/package.json ./backend/package.json
 COPY --from=builder /app/backend/package-lock.json ./backend/package-lock.json
 COPY --from=builder /app/frontend/dist ./public
 
+# Install PROD deps ONLY
 RUN cd backend && npm ci --omit=dev
 
 EXPOSE 4000

@@ -8,11 +8,10 @@ services:
       - "4000:4000"
     environment:
       PORT: 4000
-      DATABASE_URL: /app/data/dev.db
+      DATABASE_URL: postgres://media_scraper:media_scraper@postgres:5432/media_scraper
       DEFAULT_OUTPUT_DIR: /app/downloads
       STATIC_DIR: /app/public
     volumes:
-      - ./data:/app/data
       - ./downloads:/app/downloads
     depends_on:
       - postgres

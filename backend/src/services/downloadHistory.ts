@@ -1,89 +1,85 @@
-import { sqlite } from "../db/client";
+import { pool } from "../db/client";
 
-type DownloadedRow = {
+type DownloadedRecord = {
   url: string;
+  title: string | null;
+  downloadedAt: string;
+  filePath?: string | null;
+  thumbnail?: string | null;
 };
 
-export const getDownloadedSet = (urls: string[]) => {
+export const getDownloadedSet = async (urls: string[]) => {
   if (urls.length === 0) {
     return new Set<string>();
   }
 
-  const placeholders = urls.map(() => "?").join(",");
-  const stmt = sqlite.prepare(
-    `SELECT url FROM downloaded_videos WHERE url IN (${placeholders})`
+  const { rows } = await pool.query<{ url: string }>(
+    "SELECT url FROM downloaded_videos WHERE url = ANY($1)",
+    [urls]
   );
-  const rows = stmt.all(...urls) as DownloadedRow[];
   return new Set(rows.map((row) => row.url));
 };
 
-export const markDownloaded = (
+export const markDownloaded = async (
   url: string,
   title?: string,
   filePath?: string | null,
   thumbnail?: string | null
 ) => {
-  const stmt = sqlite.prepare(
-    `INSERT OR REPLACE INTO downloaded_videos (url, title, downloaded_at)
-     VALUES (?, ?, ?)`
-  );
   const now = new Date().toISOString();
-  stmt.run(url, title ?? null, now);
-
-  const update = sqlite.prepare(
-    `UPDATE downloaded_videos
-     SET file_path = ?, thumbnail = ?
-     WHERE url = ?`
+  await pool.query(
+    `INSERT INTO downloaded_videos (url, title, file_path, thumbnail, downloaded_at)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (url)
+     DO UPDATE SET
+       title = EXCLUDED.title,
+       file_path = EXCLUDED.file_path,
+       thumbnail = EXCLUDED.thumbnail,
+       downloaded_at = EXCLUDED.downloaded_at`,
+    [url, title ?? null, filePath ?? null, thumbnail ?? null, now]
   );
-  update.run(filePath ?? null, thumbnail ?? null, url);
 };
 
-export const listDownloaded = (limit = 20) => {
-  const stmt = sqlite.prepare(
-    `SELECT url, title, thumbnail, file_path as filePath, downloaded_at as downloadedAt
+export const listDownloaded = async (limit = 20) => {
+  const { rows } = await pool.query<DownloadedRecord>(
+    `SELECT url,
+            title,
+            thumbnail,
+            file_path as "filePath",
+            downloaded_at as "downloadedAt"
      FROM downloaded_videos
      ORDER BY downloaded_at DESC
-     LIMIT ?`
+     LIMIT $1`,
+    [limit]
   );
-  return stmt.all(limit) as Array<{
-    url: string;
-    title: string | null;
-    downloadedAt: string;
-    filePath?: string | null;
-    thumbnail?: string | null;
-  }>;
+  return rows;
 };
 
-export const listDownloadedFiles = () => {
-  const stmt = sqlite.prepare(
-    `SELECT url, title, thumbnail, file_path as filePath, downloaded_at as downloadedAt
+export const listDownloadedFiles = async () => {
+  const { rows } = await pool.query<DownloadedRecord>(
+    `SELECT url,
+            title,
+            thumbnail,
+            file_path as "filePath",
+            downloaded_at as "downloadedAt"
      FROM downloaded_videos
      WHERE file_path IS NOT NULL
      ORDER BY downloaded_at DESC`
   );
-  return stmt.all() as Array<{
-    url: string;
-    title: string | null;
-    downloadedAt: string;
-    filePath?: string | null;
-    thumbnail?: string | null;
-  }>;
+  return rows;
 };
 
-export const getDownloadedByUrl = (url: string) => {
-  const stmt = sqlite.prepare(
-    `SELECT url, title, thumbnail, file_path as filePath, downloaded_at as downloadedAt
+export const getDownloadedByUrl = async (url: string) => {
+  const { rows } = await pool.query<DownloadedRecord>(
+    `SELECT url,
+            title,
+            thumbnail,
+            file_path as "filePath",
+            downloaded_at as "downloadedAt"
      FROM downloaded_videos
-     WHERE url = ?
-     LIMIT 1`
+     WHERE url = $1
+     LIMIT 1`,
+    [url]
   );
-  return stmt.get(url) as
-    | {
-        url: string;
-        title: string | null;
-        downloadedAt: string;
-        filePath?: string | null;
-        thumbnail?: string | null;
-      }
-    | undefined;
+  return rows[0];
 };

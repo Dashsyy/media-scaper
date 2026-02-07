@@ -8,6 +8,7 @@ import historyRouter from "./routes/history";
 import jobsRouter from "./routes/jobs";
 import streamRouter from "./routes/stream";
 import systemRouter from "./routes/system";
+import { initDb } from "./db/client";
 
 const app = express();
 
@@ -37,6 +38,14 @@ app.get("*", (_req, res) => {
 
 const port = Number(process.env.PORT ?? 4000);
 
-app.listen(port, () => {
-  console.log(`API listening on ${port}`);
+const start = async () => {
+  await initDb();
+  app.listen(port, () => {
+    console.log(`API listening on ${port}`);
+  });
+};
+
+start().catch((error) => {
+  console.error(error instanceof Error ? error.message : "Failed to start API");
+  process.exit(1);
 });

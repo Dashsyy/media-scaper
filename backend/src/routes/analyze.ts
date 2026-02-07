@@ -5,13 +5,13 @@ import { buildTitleFromUrl, parseInputItems } from "../utils/urls";
 
 const router = Router();
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const items = parseInputItems(req.body);
-  const downloadedSet = getDownloadedSet(items.map((item) => item.url));
 
-  const responseItems = [] as Array<Record<string, unknown>>;
+  try {
+    const downloadedSet = await getDownloadedSet(items.map((item) => item.url));
+    const responseItems = [] as Array<Record<string, unknown>>;
 
-  const run = async () => {
     for (let index = 0; index < items.length; index += 1) {
       const item = items[index];
       try {
@@ -42,11 +42,9 @@ router.post("/", (req, res) => {
     }
 
     res.json({ total: responseItems.length, items: responseItems });
-  };
-
-  run().catch((error) => {
+  } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Analyze failed" });
-  });
+  }
 });
 
 export default router;

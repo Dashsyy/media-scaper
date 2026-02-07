@@ -1,6 +1,6 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, pgTable, text } from "drizzle-orm/pg-core";
 
-export const jobs = sqliteTable("jobs", {
+export const jobs = pgTable("jobs", {
   id: text("id").primaryKey(),
   sourceUrl: text("source_url").notNull(),
   outputDir: text("output_dir").notNull(),
@@ -9,7 +9,7 @@ export const jobs = sqliteTable("jobs", {
   updatedAt: text("updated_at").notNull()
 });
 
-export const jobVideos = sqliteTable("job_videos", {
+export const jobVideos = pgTable("job_videos", {
   id: text("id").primaryKey(),
   jobId: text("job_id").notNull(),
   webpageUrl: text("webpage_url").notNull(),

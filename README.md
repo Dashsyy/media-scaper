@@ -6,7 +6,7 @@ Offline helper for collecting and downloading Facebook reels/videos. The UI guid
 - Console script to collect reel/video URLs (no cookies required).
 - Analyze URLs with `yt-dlp` metadata.
 - Download queue with progress updates, cancel, and retry.
-- Download history stored in SQLite with thumbnails and timestamps.
+- Download history stored in PostgreSQL with thumbnails and timestamps.
 - English/Khmer UI toggle.
 
 ## Requirements
@@ -34,6 +34,8 @@ cp .env.example .env
 npm run dev
 ```
 
+Ensure a PostgreSQL instance is running and `DATABASE_URL` points to it.
+
 Frontend:
 ```bash
 cd frontend
@@ -54,16 +56,15 @@ docker compose up --build
 ```
 
 The Docker image installs `yt-dlp` and `ffmpeg` automatically.
-Docker Compose also starts a Postgres service (`postgres:16`) on the same network for future use.
+Docker Compose also starts a Postgres service (`postgres:16`) on the same network.
 
 Or build/run the image directly:
 ```bash
 docker build -t media-scraper:0.1.0 .
 docker run --rm -p 4000:4000 \
   -e PORT=4000 \
-  -e DATABASE_URL=/app/data/dev.db \
+  -e DATABASE_URL=postgres://media_scraper:media_scraper@host.docker.internal:5432/media_scraper \
   -e DEFAULT_OUTPUT_DIR=/app/downloads \
-  -v $(pwd)/data:/app/data \
   -v $(pwd)/downloads:/app/downloads \
   media-scraper:0.1.0
 ```
@@ -96,5 +97,5 @@ Update `scripts/deploy-docker.sh` if you want a different Docker Hub repo.
 - `POST /api/system/reveal` — open file or folder.
 
 ## Notes
-- This project uses SQLite for history tracking.
+- This project uses PostgreSQL for history tracking.
 - Jobs are in-memory (not persisted across restarts).

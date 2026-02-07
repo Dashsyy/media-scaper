@@ -86,9 +86,12 @@ export const runYtDlpDownload = ({
 
     onProcess?.(process);
 
-    process.stdout.on("data", (data) => {
-      const lines = data.toString().split(/\r?\n/).filter(Boolean);
-      lines.forEach((line) => {
+    process.stdout.on("data", (data: Buffer) => {
+      const lines = data
+        .toString()
+        .split(/\r?\n/)
+        .filter((line: string) => line.length > 0);
+      lines.forEach((line: string) => {
         onLog?.(line);
         const progressMatch = line.match(progressRegex);
         if (progressMatch) {
@@ -100,14 +103,19 @@ export const runYtDlpDownload = ({
         const destinationMatch = line.match(destinationRegex);
         if (destinationMatch) {
           filePath = destinationMatch[1].trim();
-          onFilePath?.(filePath);
+          if (filePath) {
+            onFilePath?.(filePath);
+          }
         }
       });
     });
 
-    process.stderr.on("data", (data) => {
-      const lines = data.toString().split(/\r?\n/).filter(Boolean);
-      lines.forEach((line) => onLog?.(line));
+    process.stderr.on("data", (data: Buffer) => {
+      const lines = data
+        .toString()
+        .split(/\r?\n/)
+        .filter((line: string) => line.length > 0);
+      lines.forEach((line: string) => onLog?.(line));
     });
 
     process.on("error", (error) => {

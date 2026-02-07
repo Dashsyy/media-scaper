@@ -91,7 +91,7 @@ const runDownloads = async (job: Job, outputDir: string, onlyFailed = false) => 
       item.progress = 100;
       item.status = "completed";
       item.filePath = item.filePath ?? result.filePath ?? null;
-      markDownloaded(item.url, item.title, item.filePath, item.thumbnail ?? null);
+      await markDownloaded(item.url, item.title, item.filePath, item.thumbnail ?? null);
       emitItemUpdate(job, item);
     } catch (error) {
       item.status = job.cancelled ? "cancelled" : "failed";
