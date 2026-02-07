@@ -6,8 +6,6 @@ export default {
   out: "./migrations",
   driver: "pg",
   dbCredentials: {
-    connectionString:
-      process.env.DATABASE_URL ??
-      "postgres://media_scraper:media_scraper@localhost:5432/media_scraper"
+    connectionString: process.env.DATABASE_URL
   }
 } satisfies Config;
