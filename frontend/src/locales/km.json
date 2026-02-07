@@ -72,7 +72,9 @@
     "untitled": "វីដេអូគ្មានចំណងជើង",
     "date": "បានទាញយកនៅ {{value}}",
     "reveal": "បើក",
-    "noThumbnail": "គ្មានរូបភាព"
+    "noThumbnail": "គ្មានរូបភាព",
+    "download": "ទាញយក",
+    "downloadAll": "ទាញយកទាំងអស់"
   },
   "help": {
     "title": "របៀបទាញយក cookies.txt",

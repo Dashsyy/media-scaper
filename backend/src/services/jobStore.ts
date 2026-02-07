@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { spawn } from "child_process";
+import path from "path";
 import { v4 as uuid } from "uuid";
 import { runYtDlpDownload } from "./ytDlp";
 import { markDownloaded } from "./downloadHistory";
@@ -131,7 +132,10 @@ export const createJob = (
 
   jobs.set(job.id, job);
 
-  const resolvedOutput = outputDir ?? "./downloads";
+  const resolvedOutput =
+    outputDir ??
+    process.env.DEFAULT_OUTPUT_DIR ??
+    path.resolve(process.cwd(), "..", "downloads");
   runDownloads(job, resolvedOutput).catch(() => {
     job.status = "failed";
     finishJob(job);

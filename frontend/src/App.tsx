@@ -88,7 +88,7 @@ const App = () => {
     "idle" | "running" | "completed" | "failed" | "cancelled"
   >("idle");
   const [jobId, setJobId] = useState<string | null>(null);
-  const [outputDir, setOutputDir] = useState("./downloads");
+  const [outputDir, setOutputDir] = useState("../downloads");
   const [pastedUrls, setPastedUrls] = useState("");
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [historyStatus, setHistoryStatus] = useState<"idle" | "loading" | "error">(
@@ -357,6 +357,9 @@ const App = () => {
     }
   };
 
+  const getDownloadLink = (url: string) =>
+    `${API_BASE}/api/files/download?url=${encodeURIComponent(url)}`;
+
   useEffect(() => {
     refreshHistory();
     return () => {
@@ -610,9 +613,17 @@ const App = () => {
           <Card className="bg-white/80">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900">{t("history.title")}</h3>
-              <Button size="sm" variant="outline" onClick={refreshHistory}>
-                {t("history.refresh")}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
+                  href={`${API_BASE}/api/files/download-all`}
+                >
+                  {t("history.downloadAll")}
+                </a>
+                <Button size="sm" variant="outline" onClick={refreshHistory}>
+                  {t("history.refresh")}
+                </Button>
+              </div>
             </div>
             <div className="mt-4 grid gap-3 text-sm text-slate-600">
               {historyStatus === "error" ? (
@@ -659,6 +670,12 @@ const App = () => {
                       >
                         {t("history.reveal")}
                       </Button>
+                      <a
+                        className="ml-2 inline-flex items-center rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 hover:border-slate-400"
+                        href={getDownloadLink(item.url)}
+                      >
+                        {t("history.download")}
+                      </a>
                     </div>
                   </div>
                 ))

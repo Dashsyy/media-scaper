@@ -16,6 +16,7 @@ dist/
 # App data
 data/
 downloads/
+pgdata/
 
 # SQLite
 *.db

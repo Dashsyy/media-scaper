@@ -72,7 +72,9 @@
     "untitled": "Untitled video",
     "date": "Downloaded at {{value}}",
     "reveal": "Open",
-    "noThumbnail": "No thumbnail"
+    "noThumbnail": "No thumbnail",
+    "download": "Download",
+    "downloadAll": "Download all"
   },
   "help": {
     "title": "How to export cookies.txt",

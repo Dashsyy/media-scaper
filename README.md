@@ -54,6 +54,7 @@ docker compose up --build
 ```
 
 The Docker image installs `yt-dlp` and `ffmpeg` automatically.
+Docker Compose also starts a Postgres service (`postgres:16`) on the same network for future use.
 
 Or build/run the image directly:
 ```bash
@@ -66,6 +67,16 @@ docker run --rm -p 4000:4000 \
   -v $(pwd)/downloads:/app/downloads \
   media-scraper:0.1.0
 ```
+
+## Docker Hub Deploy
+
+One-step deploy script (build + tag + push):
+```bash
+chmod +x scripts/deploy-docker.sh
+./scripts/deploy-docker.sh
+```
+
+Update `scripts/deploy-docker.sh` if you want a different Docker Hub repo.
 
 ## How to Use
 1. Open Facebook, go to the page with reels/videos, and scroll to load more.

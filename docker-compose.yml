@@ -14,3 +14,16 @@ services:
     volumes:
       - ./data:/app/data
       - ./downloads:/app/downloads
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: media_scraper
+      POSTGRES_PASSWORD: media_scraper
+      POSTGRES_DB: media_scraper
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data

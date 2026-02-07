@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import path from "path";
 import analyzeRouter from "./routes/analyze";
+import filesRouter from "./routes/files";
 import historyRouter from "./routes/history";
 import jobsRouter from "./routes/jobs";
 import streamRouter from "./routes/stream";
@@ -18,6 +19,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/analyze", analyzeRouter);
+app.use("/api/files", filesRouter);
 app.use("/api/history", historyRouter);
 app.use("/api/jobs", jobsRouter);
 app.use("/api/jobs", streamRouter);

@@ -53,3 +53,37 @@ export const listDownloaded = (limit = 20) => {
     thumbnail?: string | null;
   }>;
 };
+
+export const listDownloadedFiles = () => {
+  const stmt = sqlite.prepare(
+    `SELECT url, title, thumbnail, file_path as filePath, downloaded_at as downloadedAt
+     FROM downloaded_videos
+     WHERE file_path IS NOT NULL
+     ORDER BY downloaded_at DESC`
+  );
+  return stmt.all() as Array<{
+    url: string;
+    title: string | null;
+    downloadedAt: string;
+    filePath?: string | null;
+    thumbnail?: string | null;
+  }>;
+};
+
+export const getDownloadedByUrl = (url: string) => {
+  const stmt = sqlite.prepare(
+    `SELECT url, title, thumbnail, file_path as filePath, downloaded_at as downloadedAt
+     FROM downloaded_videos
+     WHERE url = ?
+     LIMIT 1`
+  );
+  return stmt.get(url) as
+    | {
+        url: string;
+        title: string | null;
+        downloadedAt: string;
+        filePath?: string | null;
+        thumbnail?: string | null;
+      }
+    | undefined;
+};
