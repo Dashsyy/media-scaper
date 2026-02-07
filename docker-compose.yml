@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  media-scraper:
+    build: .
+    image: media-scraper:0.1.0
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      DATABASE_URL: /app/data/dev.db
+      DEFAULT_OUTPUT_DIR: /app/downloads
+      STATIC_DIR: /app/public
+    volumes:
+      - ./data:/app/data
+      - ./downloads:/app/downloads

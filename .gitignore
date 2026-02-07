@@ -1,0 +1,33 @@
+.DS_Store
+.env
+.env.*
+*.log
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite
+dist/
+
+# App data
+data/
+downloads/
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# OS
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+
+# Cache
+.cache/

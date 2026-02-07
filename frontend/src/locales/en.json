@@ -1,0 +1,84 @@
+{
+  "app": {
+    "title": "Offline Media Scraper",
+    "tagline": "Facebook video collector",
+    "status": "Ready for analysis"
+  },
+  "form": {
+    "title": "Analyze a Facebook page",
+    "subtitle": "Collect reel URLs via the console script, then analyze them here.",
+    "cookiesLabel": "Cookies.txt content",
+    "cookiesPlaceholder": "Paste cookies.txt content here",
+    "scriptLabel": "Console script (no cookies)",
+    "copyScript": "Copy script",
+    "scriptHint": "This script is read-only. Use Copy to paste in Facebook console.",
+    "urlsLabel": "Paste collected URLs",
+    "urlsPlaceholder": "Paste one URL per line",
+    "analyze": "Analyze videos",
+    "download": "Start download",
+    "ready": "Waiting for URL",
+    "clear": "Clear form"
+  },
+  "usage": {
+    "title": "How to use this app",
+    "step1": "Open Facebook and log in to your account.",
+    "step2": "Go to the page that has reels/videos and scroll to load more.",
+    "step3": "Open DevTools → Console and paste the script above.",
+    "step4": "Copy the JSON output from the console.",
+    "step5": "Paste the URLs into the textbox, then click Analyze.",
+    "step6": "Select items and start the download."
+  },
+  "results": {
+    "title": "Detected videos",
+    "description": "Run an analysis to list videos, duration, and source links before downloading.",
+    "selectAll": "Select all",
+    "selected": "Selected",
+    "ready": "Ready",
+    "downloaded": "Downloaded",
+    "count": "{{count}} videos",
+    "empty": "Paste URLs and run analysis to see videos here.",
+    "noThumbnail": "No thumbnail",
+    "unknownUploader": "Unknown uploader",
+    "unknownDuration": "Unknown duration",
+    "unknownDate": "Unknown date"
+  },
+  "progress": {
+    "title": "Download progress",
+    "description": "Downloads will stream here with real-time percentages once started.",
+    "status": {
+      "idle": "Idle",
+      "running": "Downloading",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "percent": "{{value}}% complete",
+    "empty": "Start a download to track progress here.",
+    "retry": "Retry failed",
+    "cancel": "Cancel"
+  },
+  "settings": {
+    "title": "Download settings",
+    "output": "Output folder",
+    "save": "Save",
+    "reveal": "Open folder"
+  },
+  "history": {
+    "title": "Download history",
+    "refresh": "Refresh",
+    "loading": "Loading history...",
+    "empty": "No downloads yet.",
+    "error": "Unable to load history.",
+    "untitled": "Untitled video",
+    "date": "Downloaded at {{value}}",
+    "reveal": "Open",
+    "noThumbnail": "No thumbnail"
+  },
+  "help": {
+    "title": "How to export cookies.txt",
+    "step1": "Install a cookies.txt exporter extension (Get cookies.txt locally or cookies.txt).",
+    "step2": "Log in to Facebook in your browser.",
+    "step3": "Export cookies for facebook.com as cookies.txt.",
+    "step4": "Paste the full cookies.txt content into the field above."
+  }
+}
