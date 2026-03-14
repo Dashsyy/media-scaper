@@ -1,7 +1,7 @@
 # =========================
 # deps (dev + build deps)
 # =========================
-FROM node:25-bookworm-slim AS deps
+FROM node:20-bookworm-slim AS deps
 
 WORKDIR /app
 

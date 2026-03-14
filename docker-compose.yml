@@ -2,9 +2,9 @@ services:
   media-scraper:
     build:
       context: .
-      args:
-        VITE_API_URL: ${VITE_API_URL}
     image: media-scraper:0.1.0
+    container_name: media-scraper
+    restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
@@ -15,15 +15,23 @@ services:
     volumes:
       - ./downloads:/app/downloads
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   postgres:
     image: postgres:16
+    container_name: media-scraper-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: media_scraper
       POSTGRES_PASSWORD: media_scraper
       POSTGRES_DB: media_scraper
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U media_scraper -d media_scraper"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

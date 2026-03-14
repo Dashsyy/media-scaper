@@ -21,7 +21,7 @@ type JobStatus = "idle" | "running" | "completed" | "failed" | "cancelled";
 const consoleScript =
   "(function(){const links=Array.from(document.querySelectorAll('a[href*=\"/reel/\"],a[href*=\"/videos/\"],a[href*=\"/video/\"]'));const items=links.map((a)=>{const url=a.href.split('?')[0];const img=a.querySelector('img');const thumb=img?img.src:null;return {url,thumbnail:thumb};}).filter((item)=>/(\\/reel\\/\\d+|\\/videos\\/\\d+|\\/video\\/\\d+)/.test(item.url));const map=new Map();items.forEach((item)=>{if(!map.has(item.url)){map.set(item.url,item);}});const unique=Array.from(map.values());console.log('Found items:',unique.length);console.log(JSON.stringify(unique,null,2));return unique;})();";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+const API_BASE = (import.meta.env.VITE_API_URL as string) || "";
 
 const parsePastedItems = (value: string) => {
   const trimmed = value.trim();
@@ -57,6 +57,9 @@ const parsePastedItems = (value: string) => {
 };
 
 const App = () => {
+  useEffect(() => {
+    console.log("Current API_BASE:", API_BASE);
+  }, []);
   const { t, i18n } = useTranslation();
   const [results, setResults] = useState<VideoItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);

@@ -1,11 +1,8 @@
 node_modules
-frontend/node_modules
-backend/node_modules
-frontend/dist
-backend/dist
-data
+dist
+pgdata
 downloads
 .env
-.env.*
-*.log
-.DS_Store
+frontend/.env
+backend/.env
+.git
