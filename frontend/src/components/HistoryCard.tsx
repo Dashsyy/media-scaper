@@ -25,7 +25,7 @@ const HistoryCard = ({
   getDownloadLink,
   truncateTitle
 }: HistoryCardProps) => (
-  <Card className="bg-white/80">
+  <Card id="tour-step-4" className="bg-white/80 border-transparent transition-all">
     <div className="flex items-center justify-between">
       <h3 className="text-base font-semibold text-slate-900">{t("history.title")}</h3>
       <div className="flex flex-wrap gap-2">

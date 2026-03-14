@@ -11,6 +11,8 @@
     "cookiesPlaceholder": "Paste cookies.txt content here",
     "scriptLabel": "Console script (no cookies)",
     "copyScript": "Copy script",
+    "openFacebook": "Open Facebook Reels",
+    "copied": "Copied!",
     "scriptHint": "This script is read-only. Use Copy to paste in Facebook console.",
     "urlsLabel": "Paste collected URLs",
     "urlsPlaceholder": "Paste one URL per line",
@@ -21,13 +23,29 @@
     "clear": "Clear form"
   },
   "usage": {
-    "title": "How to use this app",
-    "step1": "Open Facebook and log in to your account.",
-    "step2": "Go to the page that has reels/videos and scroll to load more.",
-    "step3": "Open DevTools → Console and paste the script above.",
-    "step4": "Copy the JSON output from the console.",
-    "step5": "Paste the URLs into the textbox, then click Analyze.",
-    "step6": "Select items and start the download."
+    "title": "Quick Guide",
+    "step1": "Open Facebook and go to the 'Reels' or 'Videos' section.",
+    "step2": "Scroll down to load all the videos you want to download.",
+    "step3": "Open DevTools Console (Press F12), paste the script, and hit Enter.",
+    "step4": "Wait for 'Result copied to clipboard!' message to appear.",
+    "step5": "Return to this app and paste (Ctrl+V) into the box below.",
+    "step6": "Click 'Analyze', select your videos, and start downloading."
+  },
+  "tour": {
+    "welcome": "Welcome to Media Scraper!",
+    "description": "Follow this quick tour to learn how to download Facebook videos in seconds.",
+    "start": "Start Tour",
+    "skip": "Skip",
+    "next": "Next",
+    "finish": "Got it!",
+    "step1_title": "1. Copy the Script",
+    "step1_desc": "Copy this script, then go to the Facebook 'Reels' section. Open your browser console (F12) and paste it to collect all video URLs automatically.",
+    "step2_title": "2. Paste & Analyze",
+    "step2_desc": "Paste the items you collected from the Facebook console here. Then click 'Analyze' to fetch titles and thumbnails.",
+    "step3_title": "3. Track Progress",
+    "step3_desc": "Once you start a download, you'll see live progress, speed, and status updates right here.",
+    "step4_title": "4. View History",
+    "step4_desc": "All your successful downloads are saved here. You can quickly open them in your local folder."
   },
   "results": {
     "title": "Detected videos",

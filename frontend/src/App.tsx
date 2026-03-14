@@ -7,6 +7,7 @@ import HistoryCard from "./components/HistoryCard";
 import ProgressCard from "./components/ProgressCard";
 import ResultsCard from "./components/ResultsCard";
 import UsageCard from "./components/UsageCard";
+import TourOverlay from "./components/TourOverlay";
 import type { HistoryItem, ProgressItem, VideoItem } from "./types";
 import { truncateTitle } from "./utils/text";
 
@@ -18,8 +19,40 @@ const languageOptions = [
 type AnalyzeStatus = "idle" | "loading" | "error";
 type JobStatus = "idle" | "running" | "completed" | "failed" | "cancelled";
 
-const consoleScript =
-  "(function(){const links=Array.from(document.querySelectorAll('a[href*=\"/reel/\"],a[href*=\"/videos/\"],a[href*=\"/video/\"]'));const items=links.map((a)=>{const url=a.href.split('?')[0];const img=a.querySelector('img');const thumb=img?img.src:null;return {url,thumbnail:thumb};}).filter((item)=>/(\\/reel\\/\\d+|\\/videos\\/\\d+|\\/video\\/\\d+)/.test(item.url));const map=new Map();items.forEach((item)=>{if(!map.has(item.url)){map.set(item.url,item);}});const unique=Array.from(map.values());console.log('Found items:',unique.length);console.log(JSON.stringify(unique,null,2));return unique;})();";
+const consoleScript = `(function() {
+  const links = Array.from(document.querySelectorAll('a[href*="/reel/"], a[href*="/videos/"], a[href*="/video/"]'));
+  const items = links.map((a) => {
+    const url = a.href.split('?')[0];
+    const img = a.querySelector('img');
+    const thumb = img ? img.src : null;
+    return { url, thumbnail: thumb };
+  }).filter((item) => /(\\/reel\\/\\d+|\\/videos\\/\\d+|\\/video\\/\\d+)/.test(item.url));
+
+  const map = new Map();
+  items.forEach((item) => {
+    if (!map.has(item.url)) {
+      map.set(item.url, item);
+    }
+  });
+
+  const unique = Array.from(map.values());
+  console.log('%c Media Scraper Collector ', 'background: #2563eb; color: #fff; font-weight: bold; padding: 4px; border-radius: 4px;');
+  console.log('Found items:', unique.length);
+  
+  if (unique.length > 0) {
+    const json = JSON.stringify(unique, null, 2);
+    console.log(json);
+    try {
+      copy(json);
+      console.log('%c Result copied to clipboard automatically! ', 'color: #16a34a; font-weight: bold;');
+    } catch (e) {
+      console.log('Please copy the JSON object above manually.');
+    }
+  } else {
+    console.warn('No reels or videos found on this page. Try scrolling down to load more.');
+  }
+  return unique;
+})();`;
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) || "";
 
@@ -75,7 +108,20 @@ const App = () => {
   const [editTargetId, setEditTargetId] = useState<string | null>(null);
   const [editTitleValue, setEditTitleValue] = useState("");
   const [forceDownload, setForceDownload] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem("hasSeenTour");
+    if (!hasSeenTour) {
+      setShowTour(true);
+    }
+  }, []);
+
+  const handleFinishTour = () => {
+    localStorage.setItem("hasSeenTour", "true");
+    setShowTour(false);
+  };
   const analyzePollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const selectableResults = forceDownload
     ? results
@@ -519,61 +565,65 @@ const App = () => {
         onLanguageChange={(language) => i18n.changeLanguage(language)}
       />
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-6 pb-16 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="grid gap-6">
-          <AnalyzeFormCard
-            t={t}
-            pastedUrls={pastedUrls}
-            analyzeStatus={analyzeStatus}
-            forceDownload={forceDownload}
-            onCopyScript={handleCopyScript}
-            onAnalyze={handleAnalyze}
-            onDownload={handleDownload}
-            onClear={handleClear}
-            onPastedUrlsChange={setPastedUrls}
-            onForceDownloadChange={setForceDownload}
-          />
-          <ResultsCard
-            t={t}
-            results={results}
-            sortedResults={sortedResults}
-            selectedIds={selectedIds}
-            allSelected={allSelected}
-            analyzeStatus={analyzeStatus}
-            analyzeProgress={analyzeProgress}
-            hasEditedTitles={hasEditedTitles}
-            allowDownloadedSelection={forceDownload}
-            onToggleSelectAll={toggleSelectAll}
-            onToggleSelection={toggleSelection}
-            onEditTitle={openEditDialog}
-            onRevertAll={handleRevertAllTitles}
-            truncateTitle={truncateTitle}
-          />
+      <main className="mx-auto max-w-6xl px-6 pb-16">
+        <div className="mb-6">
+          <UsageCard t={t} />
         </div>
 
-        <div className="grid gap-6">
-          <ProgressCard
-            t={t}
-            jobStatus={jobStatus}
-            jobId={jobId}
-            sortedProgress={sortedProgress}
-            onRetryFailed={handleRetryFailed}
-            onCancel={handleCancelJob}
-            getProgressTone={getProgressTone}
-            truncateTitle={truncateTitle}
-          />
-          <UsageCard t={t} />
-          <HistoryCard
-            t={t}
-            historyItems={historyItems}
-            historyStatus={historyStatus}
-            downloadAllUrl={`${API_BASE}/api/files/download-all`}
-            onRefresh={refreshHistory}
-            onRevealPath={handleRevealPath}
-            getDownloadLink={getDownloadLink}
-            truncateTitle={truncateTitle}
-          />
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-6">
+            <AnalyzeFormCard
+              t={t}
+              pastedUrls={pastedUrls}
+              analyzeStatus={analyzeStatus}
+              forceDownload={forceDownload}
+              onCopyScript={handleCopyScript}
+              onAnalyze={handleAnalyze}
+              onDownload={handleDownload}
+              onClear={handleClear}
+              onPastedUrlsChange={setPastedUrls}
+              onForceDownloadChange={setForceDownload}
+            />
+            <ResultsCard
+              t={t}
+              results={results}
+              sortedResults={sortedResults}
+              selectedIds={selectedIds}
+              allSelected={allSelected}
+              analyzeStatus={analyzeStatus}
+              analyzeProgress={analyzeProgress}
+              hasEditedTitles={hasEditedTitles}
+              allowDownloadedSelection={forceDownload}
+              onToggleSelectAll={toggleSelectAll}
+              onToggleSelection={toggleSelection}
+              onEditTitle={openEditDialog}
+              onRevertAll={handleRevertAllTitles}
+              truncateTitle={truncateTitle}
+            />
+          </div>
 
+          <div className="grid gap-6">
+            <ProgressCard
+              t={t}
+              jobStatus={jobStatus}
+              jobId={jobId}
+              sortedProgress={sortedProgress}
+              onRetryFailed={handleRetryFailed}
+              onCancel={handleCancelJob}
+              getProgressTone={getProgressTone}
+              truncateTitle={truncateTitle}
+            />
+            <HistoryCard
+              t={t}
+              historyItems={historyItems}
+              historyStatus={historyStatus}
+              downloadAllUrl={`${API_BASE}/api/files/download-all`}
+              onRefresh={refreshHistory}
+              onRevealPath={handleRevealPath}
+              getDownloadLink={getDownloadLink}
+              truncateTitle={truncateTitle}
+            />
+          </div>
         </div>
       </main>
       <EditTitleDialog
@@ -591,6 +641,7 @@ const App = () => {
           closeEditDialog();
         }}
       />
+      {showTour && <TourOverlay onFinish={handleFinishTour} />}
     </div>
   );
 };
